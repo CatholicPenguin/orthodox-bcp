@@ -1,0 +1,728 @@
+\documentclass[10pt]{book}
+\usepackage[a5paper, %This enables easy large-letter editions (A4)
+bindingoffset=5mm,%having an inner margin offset prevents text falling into the gutter
+inner=20mm,
+outer=20mm,
+top=20mm,
+bottom=25mm,
+twoside,
+heightrounded]{geometry}
+\frenchspacing %Prevents the silly double space after each sentence
+\usepackage{pifont} %Needed for \ding characters (for the crosses mainly)
+\usepackage{ebgaramond} %Standard open source font
+
+%To ensure language compatibility.
+\usepackage[utf8]{inputenc}
+\usepackage[greek,latin,british]{babel}
+
+%Section Formatting
+\setcounter{secnumdepth}{0} %To remove number from sections
+\usepackage{sectsty} %Allows modification of sections
+\sectionfont{\Large \normalfont \centering}
+\subsectionfont{\normalsize \scshape \centering}
+\subsubsectionfont{\normalfont \normalsize \centering \itshape}
+
+%Alternative Section Formatting to Get Better Control
+\usepackage{needspace} %\needspace causes some issue, but I think it can work if it is not initialised in a paracol but by forcing the sectioning to move (thereby moving the content).
+
+\newcommand{\seccy}[1]{ %All sections begin at the top of a page (except for the psalms), so this command is available but unused.
+\needspace{8\baselineskip}
+\section{#1}}
+
+\newcommand{\psalmsec}[1]{\Needspace{10\baselineskip} %I'm still tweaking this. The psalms are unique, so this is just used for them.
+\section*{#1}}
+
+\newcommand{\subbypsalm}[1]{\setcounter{lettcount}{0}%
+\Needspace{7\baselineskip}%
+\subsection{#1}}
+
+\newcommand{\subby}[1]{\setcounter{lettcount}{0}\setcounter{margcount}{1}%
+\needspace{8\baselineskip}%
+\subsection{#1}
+\global\setcounter{latinrubric}{1}
+}
+
+\newcommand{\subbysub}[1]{\setcounter{lettcount}{0}%
+\needspace{6\baselineskip}% I have no idea how sectioning affects the calculation of baselineskip.
+\subsubsection{#1}}
+
+%These are commands for when we want the counters reset and some provision made for spacing, but no as much needed by lettrine or other circumstances:
+
+\newcommand{\subsec}[1]{\setcounter{lettcount}{0}\setcounter{margcount}{1}%
+\needspace{2\baselineskip}%
+\subsection{#1}%
+\global\setcounter{latinrubric}{1}}
+
+\newcommand{\subsubsec}[1]{\setcounter{lettcount}{0}%
+\needspace{2\baselineskip}%
+\subsubsection{#1}}
+
+%URL
+\usepackage[hidelinks]{hyperref}
+%Remove red boxes around links:
+%\hypersetup{%
+%    pdfborder = {0 0 0}
+%}
+
+%Page Headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt} %Prevent line at top of page
+\fancyfoot[C]{\thepage}
+%Prevents chapter from resetting page layout
+\fancypagestyle{plain}{
+	\fancyhf{}
+	\fancyfoot[C]{}
+	\renewcommand{\headrulewidth}{0pt}
+}
+
+%Try to avoid warnings:
+\setlength{\headheight}{17.13pt}
+
+
+%To make sure versicle and response start with indent.
+\usepackage{indentfirst}
+
+%To create hanging indent for Hymns.
+\usepackage{hanging}
+
+
+\usepackage{paracol} %To provide balanced English-Latin dual paragraphs
+\usepackage{multicol} %For non bilingual dual columns.
+
+%Prevent lettrine misalignment:
+\raggedbottom
+
+\newcommand{\elcol}[2]{\sloppy
+	\begin{paracol}{2}
+		\begin{leftcolumn}
+			#1
+		\end{leftcolumn}
+		\begin{rightcolumn}
+			\selectlanguage{latin}%
+			#2
+		\end{rightcolumn}
+		\switchcolumn*
+	\end{paracol}
+\selectlanguage{british}
+\fussy
+\setcounter{lettcount}{0}}
+
+%For use when I want the Latin available for later, but not using it right now:
+\newcommand{\fakecol}[2]{\par
+#1
+\par\setcounter{lettcount}{0}}
+%Same as above but is intended for text/prayers which are neither collects nor responsory, which should not have an indent.
+\newcommand{\elcoldent}[2]{\sloppy
+	\begin{paracol}{2}
+		\begin{leftcolumn}
+		\noindent%
+			#1	
+		\end{leftcolumn}
+		\begin{rightcolumn}
+                \selectlanguage{latin}%
+			\noindent
+			#2
+		\end{rightcolumn}
+		\switchcolumn*
+	\end{paracol}
+\selectlanguage{british}
+\fussy
+\setcounter{lettcount}{0}}
+%Gradual \& Alleluia
+\newcommand{\gradall}[2]{\vspace{1ex}\par\noindent
+\emph{Gradual.} #1\\
+\par\noindent
+\emph{Alleluia.} #2}
+%Gradual \& Tract
+\newcommand{\gradtr}[2]{\vspace{1ex}\par\noindent
+\emph{Gradual.} #1\\
+\par\noindent
+\emph{Tract.} #2}
+
+%Counter to create space from lettrine
+\newcounter{prelett}
+\usepackage{calc}
+%Checking lett or rubric right behind
+\newcounter{lettcount}
+%Commands for each minor proper:
+\newcommand{\alleluia}[1]{\setcounter{lettcount}{0}\vspace{1ex}\par\noindent
+\emph{Alleluia.} #1}
+\newcommand{\gradual}[1]{\setcounter{lettcount}{0}\vspace{1ex}\par\noindent
+\emph{Gradual.} #1}
+\newcommand{\tract}[1]{\setcounter{lettcount}{0}\vspace{1ex}\par\noindent
+\emph{Tract.} #1}
+\newcommand{\communion}[1]{\par
+\ifnum\thelettcount=0
+    \vspace{1\baselineskip}
+    \par\noindent
+    \emph{Communion.} #1\par
+    \else
+        \ifnum\thelettcount=1
+            \ifnum\prevgraf<3
+                \setcounter{prelett}{2-\prevgraf}
+                \vspace{\theprelett\baselineskip}
+                \medskip
+                \par\noindent
+                \emph{Communion.} #1\par
+            \else
+                \medskip
+                \par\noindent
+                \emph{Communion.} #1\par
+            \fi
+        \else
+            \ifnum\thelettcount<3
+                \setcounter{prelett}{2-\thelettcount}
+                \vspace{\theprelett\baselineskip}
+                \medskip
+                \par\noindent
+                \emph{Communion.} #1\par
+            \else
+                \medskip
+                \par\noindent
+                \emph{Communion.} #1\par
+            \fi
+        \fi
+    \fi}
+\newcommand{\offertory}[1]{\setcounter{lettcount}{0}\vspace{1ex}\par\noindent
+\emph{Offertory.} #1}
+%In order to control where the placement of the reading type and citation are placed (trying to save space by modeling after the 1928 BCP):
+\newcommand{\readingcitation}[2]{\setcounter{lettcount}{0}%
+\needspace{4\baselineskip}%
+\subsubsection{#1. \emph{#2}}}
+
+\newcommand{\secret}[0]{\setcounter{lettcount}{0}%
+\needspace{4\baselineskip}%
+\subsubsection{Secret}}
+
+\newcommand{\introit}[0]{\setcounter{lettcount}{0}%
+\needspace{4\baselineskip}%
+\subsubsection{Introit}}
+
+\newcommand{\collect}[0]{\setcounter{lettcount}{0}%
+\needspace{4\baselineskip}%
+\subsubsection{Collect}}
+
+\newcommand{\postcommunion}[0]{\setcounter{lettcount}{0}%
+\needspace{4\baselineskip}%
+\subsubsection{Postcommunion}}
+
+%Controls the width of the line between columns
+\setlength\columnseprule{0.4pt}
+
+
+%For difference between through the year and in eastertide:
+\newcommand{\ttyie}[2]{\sloppy
+	\begin{paracol}{2}
+		\begin{leftcolumn}\noindent
+			#1	
+		\end{leftcolumn}
+		\begin{rightcolumn}\noindent
+			#2
+		\end{rightcolumn}
+		\switchcolumn*
+	\end{paracol}
+\selectlanguage{british}
+\fussy
+\setcounter{lettcount}{0}}
+
+%Expedites adding dual language Oremus/Let Us Pray
+\newcommand{\oremus}[0]{\par
+\needspace{5\baselineskip}
+	\begin{paracol}{2}
+		\begin{leftcolumn}
+			\selectlanguage{british}%
+			\noindent%
+			\centerline{\textit{Let us pray.}}
+		\end{leftcolumn}
+		\begin{rightcolumn}
+			\selectlanguage{latin}
+			\centerline{\textit{Orémus.}}
+		\end{rightcolumn}
+		\switchcolumn*
+	\end{paracol}
+\selectlanguage{british}
+\setcounter{lettcount}{0}}
+
+%Does the same as above, but for single language collects:
+\newcommand{\letuspray}[0]{\par\noindent
+\needspace{5\baselineskip}
+\centerline{\textit{Let us pray.}}
+\par
+\setcounter{lettcount}{0}}
+
+\newcommand{\oremuslatin}[0]{\par\noindent
+\needspace{5\baselineskip}
+\centerline{\textit{Orémus.}}
+\par
+\setcounter{lettcount}{0}}
+
+\usepackage[super]{nth} %To add superscript to ordinal numeral.
+%Image Configuration
+\usepackage{graphicx}
+\graphicspath{{resources/}}
+\usepackage{wrapfig}
+\usepackage{epsfig}
+\usepackage{caption} %Enables text under image
+%Colour
+\usepackage[svgnames,dvipsnames]{xcolor}
+%Lectionary
+\usepackage{array}
+\usepackage{longtable} %Allows lectionary cells to go over multiple pages
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcommand{\evensong}[1]{Evensong} %To allow switch in naming of Vespers and Evensong in lectionary
+
+%For Rubric Colour:
+\definecolor{BostonUniversityRed}{rgb}{0.8, 0.0, 0.0}
+
+%I have found it useful to have different kinds of headings in order to instruct the reader. For mere rubrical notes, which are meant to be in paragraph form, rubric is used. For headings, meant to be short, inhead (instructional heading) is used.
+%Rubric Environments
+\newenvironment{inhead}{\setcounter{lettcount}{0}\par\centering%
+\itshape%
+%\color{BostonUniversityRed}%
+\small\smallskip\ignorespaces}
+{\par\smallskip\ignorespacesafterend}
+%The first ifnum checks the boolean (there is a lett, but no secondline or thirdline) then checks the lines preceeding:
+\newenvironment{rubric}{\par\ifnum\thelettcount=1\ifnum\prevgraf=1\vspace{1\baselineskip}\smallskip\else\ifnum\prevgraf=2\medskip\smallskip\else\smallskip\fi\fi\fi\ifnum\thelettcount=2\medskip\smallskip\else\smallskip\fi\setcounter{lettcount}{0}\par\noindent%
+%\color{BostonUniversityRed}%
+\small\ignorespaces%
+\itshape%
+\P}
+{\par\smallskip\ignorespacesafterend}
+
+%Inline Rubric
+\newcommand{\inrub}[1]{{\small{%\color{BostonUniversityRed}%
+{\itshape%
+(#1)
+}
+}}}
+
+%Determine Marginnote parameters
+%\usepackage{sidenotes}
+\setlength{\marginparwidth}{15mm} % Set the width of the margin note
+\setlength{\marginparsep}{2mm} % Set the spacing between the margin note and the text
+%Fixes margin issues:
+\usepackage{marginnote}
+%Margin Rubrics/Notes/Description/Commentar
+\newcounter{margcount}
+\setcounter{margcount}{1}%
+\newcommand{\margrub}[1]{\textsuperscript{\alph{margcount}}%
+\marginpar{\begin{minipage}{0.7\marginparwidth}
+\sloppy%
+\itshape%
+\scriptsize%
+\textsuperscript{\alph{margcount}}%
+#1%
+\fussy
+\end{minipage}}
+\stepcounter{margcount}
+\stepcounter{latinrubric}
+\ifnum\value{margcount}>26\relax%
+    \setcounter{margcount}{1}%
+    \setcounter{latinrubric}{1}
+  \fi}
+  
+%Makes sure odd pages are on the right when moving between page number types.
+\usepackage[strict]{changepage}
+\usepackage{scrextend}
+
+\newcommand{\margcolrub}[1]{%
+\textsuperscript{\alph{margcount}}%
+\Ifthispageodd{\reversemarginpar
+\marginpar{%
+\raggedright%
+\sloppy%
+\itshape%
+\scriptsize%
+    \textsuperscript{\alph{margcount}}%
+    #1%
+    \fussy}
+    }{\normalmarginpar
+    \marginpar{%
+\raggedleft%
+\sloppy%
+\itshape%
+\scriptsize%
+\textsuperscript{\alph{margcount}}%
+    #1%
+    \fussy}}
+\stepcounter{margcount}%
+\ifnum\value{margcount}>26\relax%
+    \setcounter{margcount}{1}
+\fi}
+%\normalmarginpar}
+
+%Counter to add rubric indicatorlowing command  in Latin.
+\newcounter{latinrubric}
+\setcounter{latinrubric}{1}
+%To apply counters to all paracol columns:
+\globalcounter*
+
+\newcommand{\marglatincolrub}[1]{\textsuperscript{\alph{latinrubric}}%
+\stepcounter{latinrubric}%
+\ifnum\value{latinrubric}>26\relax%
+    \setcounter{latinrubric}{1}
+\fi
+}
+%Propers
+\newcommand{\antiphon}[2]{{\centering \textit{#1 Ant.} #2}}
+
+%Invitatory \& Fore-Office
+\newcommand{\inv}[1]{\textit{#1}}
+\newcommand{\vr}[1]{{\footnotesize{ (#1)}}}
+
+%Since I've been going back and forth on capitalisation of letters in small caps, I made this command in order to be able to change them all at once:
+\newcommand{\divineName}[1]{\textsc{#1}}
+
+\usepackage{lettrine}
+\newcommand{\lett}[2]{\setcounter{lettcount}{1}\lettrine[image=true,realheight=true,lines=3]{artdeco/#1.png}{{\lowercase{#2}}}} %Specifies a specific folder for normal lettrine images
+\newcommand{\lettnopic}[2]{\setcounter{lettcount}{1}\lettrine[realheight=true,lines=3]{#1}{#2}} %When there is not an image, just uses normal letter.
+
+%These commands ensure that when there is a lettrine, following paragraphs will not conflict with the drop capital.
+%We need this counter for thirdline.
+\setlength{\parindent}{1em}
+\newcounter{preprevgraf}
+
+%Unique Psalm Spacing lines
+\newcommand{\secondlinepsalm}[1]{\setcounter{preprevgraf}{\prevgraf}\setcounter{lettcount}{\thepreprevgraf}
+\ifnum\prevgraf>2
+	{\small{2}} #1
+	\par
+    \addtocounter{lettcount}{\prevgraf}
+	\else
+		\ifnum\prevgraf=2
+			\parindent=3.25em
+			{{\small{2}} #1}
+			\par
+            \parindent=1em
+            \addtocounter{lettcount}{\prevgraf}
+			\else
+				\ifnum\prevgraf=1
+				\noindent
+				\leftskip=3.25em
+				{{\small{2}} #1}
+				\par
+                \addtocounter{lettcount}{\prevgraf}
+				\leftskip=0em
+					\else
+						{\small{2}} #1
+						\par
+                        \setcounter{lettcount}{\prevgraf}
+				\fi
+		\fi
+\fi
+}
+\newcommand{\thirdlinepsalm}[1]{
+\ifnum\thelettcount=2
+    \parindent=3.25em
+    {{\small{3}} #1}
+    \par
+    \parindent=1em
+\else
+    {\small{3}} #1
+    \par
+\fi
+\addtocounter{lettcount}{\prevgraf}
+}
+
+
+%Unique Psalm Spacing lines for Psalm 119
+\newcommand{\secondlinepsalmonenineteen}[2]{\setcounter{preprevgraf}{\prevgraf}\setcounter{lettcount}{\thepreprevgraf}
+\ifnum\prevgraf>2
+	{\small{#2}} #1
+	\par
+    \addtocounter{lettcount}{\prevgraf}
+	\else
+		\ifnum\prevgraf=2
+			\parindent=3.25em
+			{{\small{#2}} #1}
+			\par
+            \parindent=1em
+            \addtocounter{lettcount}{\prevgraf}
+			\else
+				\ifnum\prevgraf=1
+				\noindent
+				\leftskip=3.25em
+				{{\small{#2}} #1}
+				\par
+                \addtocounter{lettcount}{\prevgraf}
+				\leftskip=0em
+					\else
+						{\small{#2}} #1
+						\par
+                        \setcounter{lettcount}{\prevgraf}
+				\fi
+		\fi
+\fi
+}
+\newcommand{\thirdlinepsalmonenineteen}[2]{
+\ifnum\thelettcount=2
+    \parindent=3.25em
+    {{\small{#2}} #1}
+    \par
+    \parindent=1em
+\else
+    {\small{#2}} #1
+    \par
+\fi
+\addtocounter{lettcount}{\prevgraf}
+}
+
+
+
+\newcommand{\secondline}[1]{\setcounter{preprevgraf}{\prevgraf}\setcounter{lettcount}{\thepreprevgraf}
+\ifnum\prevgraf>2
+	#1
+	\par
+    \addtocounter{lettcount}{\prevgraf}
+	\else
+		\ifnum\prevgraf=2
+			\parindent=3.25em
+			{#1}
+			\par
+            \parindent=1em
+            \addtocounter{lettcount}{\prevgraf}
+			\else
+				\ifnum\prevgraf=1
+				\noindent
+				\leftskip=3.25em
+				{#1}
+				\par
+                \addtocounter{lettcount}{\prevgraf}
+				\leftskip=0em
+					\else
+						#1
+						\par
+                        \setcounter{lettcount}{\prevgraf}
+				\fi
+		\fi
+\fi
+}
+
+
+
+
+%The thirdline command is to ensure proper formatting with lettrine, if it uses three lines.
+\newcommand{\thirdline}[1]{
+\ifnum\thelettcount=2
+    \parindent=3.25em
+    {#1}
+    \par
+    \parindent=1em
+\else
+    #1
+    \par
+\fi
+\addtocounter{lettcount}{\prevgraf}}
+
+%Headings for the Propers
+\newcommand{\feastday}[1]{\fancyhead[RO,LE]{\textit{#1}}}
+%For short name of month
+\usepackage{datetime2}
+\newcommand{\feastdate}[2]{%\DTMparsedate{#1 #2, 2024}
+\fancyhead[RE,LO]{#1 #2}}
+%\DTMdisplaydate{\number\year}{\number\DTMmonth}{\number\DTMday}{0}}}
+
+%Psalm Formatting
+\newcommand{\psanum}[1]{\Needspace{1\baselineskip}%
+{\small{#1}} } %Allows flexibility in how to handle the verse number at the beginning of each psalm verse.
+
+%Changes to the Table of Contents
+\addto\captionsbritish{\renewcommand{\contentsname}{Table of Contents}}
+\setcounter{tocdepth}{1} %Only chapters & sections are added to the TOC
+\usepackage{tocloft}
+\setlength{\cftbeforetoctitleskip}{-8ex}
+
+%For the signature in the Preface
+	\usepackage{ragged2e}
+
+%For the Articles
+\usepackage{enumerate}
+
+%For the Chant Notation (Byzantine)
+\usepackage[autocompile]{gregoriotex}
+%Disable initial letter
+\gresetheadercapture{initial-style}{gresetinitiallines}{}
+\begin{document}
+\begin{titlepage}
+		\begin{center}
+			{\Large{The Book of}}
+			\par
+			\vspace{.4cm}
+			{\Huge{\scshape Common Prayer}}
+			\par
+			\vspace{.4cm}
+			{\Large{and Administration of the}}
+			\par
+			\vspace{.4cm}
+			{\Huge{\scshape Sacraments,}}
+			\par
+			\vspace{.4cm}
+			{\large{and other}}
+			\par
+			\vspace{.4cm}
+			{\Huge{\scshape Rites and Ceremonies}}
+			\par
+			\vspace{.4cm}
+			{\large{of the}}
+			\par
+			\vspace{.4cm}
+			{\Huge{\scshape Church}}
+			\par
+			\vspace{.4cm}
+			%{\large{according to the Use of}}
+            {\large{Proposed for Use in}}
+			\par
+			\vspace{.4cm}
+			{\Huge{\scshape the Antiochian}}
+            \par
+			\vspace{.4cm}
+            {\Huge{\scshape Western Rite Vicariate}}
+            \par
+			\vspace{.3cm}
+   		 	\centerline{\rule{0.5\textwidth}{0.4pt}}
+			\par
+			\vspace{.4cm}
+			{\LARGE{Together with the Psalter}}
+			\par
+			\vspace{.4cm}
+			{\large{or}}
+			\par
+			\vspace{.4cm}
+			{\LARGE{Psalms of David}}
+   \par
+            \vfill
+   	        \includegraphics[scale=.17]{logo.eps}
+		\end{center}
+	\end{titlepage}
+\cleardoublepage
+\pagenumbering{gobble}
+%~\clearpage
+\tableofcontents
+\addtocontents{toc}{\vspace*{-3ex}}%
+\clearpage
+%This is to ensure two odd-numbered pages are not right next to each other:
+%\clearpage
+%\checkoddpage
+%\ifoddpage \else
+%\fi
+%Roman numeral page numbers for the front material.
+\setcounter{page}{1}
+\frontmatter
+\phantomsection
+\addcontentsline{toc}{section}{Copyright}
+\fancyhead[C]{{\Large Copyright}}
+\noindent
+\copyright{} 2024 Apologia Anglicana, LLC\\
+\par\noindent
+Edited by Augustine Watson (Augustine@ApologiaAnglicana.org).\\%\par\noindent
+%Front cover designed by Matthew Taylor (@semperadiuvans).\\
+\par\noindent
+The Book of Common Prayer, published by Apologia Anglicana, LLC, is licenced under the \href{https://creativecommons.org/licenses/by-sa/4.0/}{Creative Commons Attribution-ShareAlike 4.0 International} (\url{https://creativecommons.org/licenses/by-sa/4.0/}) licence.\\
+\par\noindent
+While great care was taken to use only works in the public domain in these United States of America, there were a few cases where this was not possible. We are thankful to have such great giants upon whose shoulders we stand. These works are used in this Book according to fair use.\par
+\textit{A Manual for Priests}. \nth{5} edition. Athens: Anglican Parishes Association, 2004.\par\noindent
+\textit{This was consulted for the Burial rites.}\par
+\textit{The American Missal: Revised \& Expanded}. Glendale: Lancelot Andrewes Press, 2010.\par\noindent
+\textit{This was used for the propers for Our Lady of Walsingham.}\par
+Davis, C. Lance, ed. \textit{The Anglican Office Book}. Chester: Whithorn Press, 2023.\par\noindent
+\textit{This was consulted for the Lectionary where lessons and psalms were not provided in the 1928 BCP, the Invitatory antiphon for Septuagesimatide, some text and rubrics in Prime \& Compline, and for some Daily Office propers.}\par
+The General Synod of the Anglican Church of Canada. \textit{The Book of Common Prayer}. Toronto: Anglican Book Centre, 1962.\par\noindent
+\textit{The Invitatory antiphon for Lent was adapted from the 1962 BCP.}\par
+Hartzell, Paul, ed. \textit{The Prayer Book Office}. 2nd ed. New York: Morehouse-Barlow Co., 1963.\par\noindent
+\textit{This was consulted for the Lectionary where lessons and psalms were not provided in the 1928 BCP.}\par
+\textit{Orthodox Ritual}. St. Luke's Priory Press, 2016.\par\noindent
+\textit{For the Pastoral Rites, especially for Baptism and Confirmation, care was taken to follow the language used in the \emph{Orthodox Ritual}.}
+\clearpage
+%The following is for the final release:
+
+%It is with great joy that Apologia Anglicana is blest to release this edition of the Book of the Common Prayer and Administration of the Sacraments, and other Rites and Ceremonies of the Church after the Use of the Antiochian Western Rite Vicariate. On this day, the \nth{480} anniversary of the original Book of Common Prayer in 1549, we remember the glorious liturgical achievements of our ancestors. We even more remember and celebrate our redemption from heresy and schism into the Orthodox Church.\par
+%What the English Reformers saw dimly, we rejoice in the fulness of the truth. We pray for them and for the full unity of the English people in the mystical Body of Christ. We are intensely thankful for all Orthodox Christians and especially our God-fearing bishops who gave not up on us nor harshly imposed a foreign rite upon us, which our sins would most certainly have deserved. But rather, with patient care for our souls, we rejoice in thanksgiving for not only retaining our liturgical heritage but having it healed from all error.\par
+%May this Book of Common Prayer bless all those who use it and form a habit of prayer and devotion that endures throughout all ages, world without end. Amen.
+
+%\begin{FlushRight}
+%\textit{On the III Sunday after Epiphany}
+
+%Pax Christi,
+
+%Augustine
+
+%\textit{Editor, Apologia Anglicana}
+%\end{FlushRight}
+%\clearpage
+\include{pages/Miscellaneous/Dedication}
+\include{pages/Miscellaneous/Rubrics}
+\include{pages/Miscellaneous/Kalendar}
+%
+\include{pages/Daily_Office_Lectionary/LectionaryCover}
+\include{pages/Daily_Office_Lectionary/Lectionary}
+%
+\include{pages/Daily_Office/DailyOffice}
+\include{pages/Daily_Office/ForeOffice}
+\include{pages/Daily_Office/Mattins}
+\include{pages/Daily_Office/OTCant}
+\include{pages/Daily_Office/Prime}
+\include{pages/Daily_Office/Pretiosa}
+\include{pages/Daily_Office/Commemoration}
+\include{pages/Daily_Office/Ath}
+\include{pages/Daily_Office/Evensong}
+\include{pages/Daily_Office/Compline}
+\include{pages/Daily_Office/Mary}
+%
+\include{pages/Prayers/PrayersFront.tex}
+\include{pages/Prayers/PrayersThanksgivings}
+%
+\include{pages/Litanies_Offices/Litanies}
+\include{pages/Litanies_Offices/1928Litany}
+\include{pages/Litanies_Offices/Penitential}
+\include{pages/Litanies_Offices/BaptismalBlessing}
+\include{pages/Litanies_Offices/LitanySaints}
+%
+\include{pages/Office_of_the_Dead/OOD}
+\include{pages/Office_of_the_Dead/VesperDead}
+\include{pages/Office_of_the_Dead/MatinsDead}
+\include{pages/Office_of_the_Dead/LaudsDead}
+%
+\include{pages/Eucharistic_Devotions/Eucharistic.tex}
+\include{pages/Eucharistic_Devotions/Benediction}
+\include{pages/Eucharistic_Devotions/Preparation}
+\include{pages/Eucharistic_Devotions/Thanksgiving}
+\include{pages/Eucharistic_Devotions/Asperges}
+\include{pages/Eucharistic_Devotions/ForeMass}
+%
+\include{pages/Holy_Mass/Mass}
+\include{pages/Holy_Mass/Tikhon}
+\include{pages/Holy_Mass/Byzantine}
+\include{pages/Holy_Mass/Prefaces}
+%
+\include{pages/Propers/Propers}
+\include{pages/Propers/PropSeas}
+\include{pages/Propers/PropTime}
+\include{pages/Propers/Seasonal}
+%
+\include{pages/Votive_Masses/VotiveCover}
+\include{pages/Votive_Masses/Votive}
+%
+\include{pages/Pastoral_Rites/Pastoral}
+\include{pages/Pastoral_Rites/Baptism}
+\include{pages/Pastoral_Rites/AdultBaptism}
+\include{pages/Pastoral_Rites/Confession}
+\include{pages/Pastoral_Rites/Reception}
+\include{pages/Pastoral_Rites/Confirmation}
+\include{pages/Pastoral_Rites/Matrimony}
+\include{pages/Pastoral_Rites/Purification}
+\include{pages/Pastoral_Rites/Unction}
+\include{pages/Pastoral_Rites/CommunionOfTheSick}
+\include{pages/Pastoral_Rites/Burial}
+\include{pages/Pastoral_Rites/BurialChild}
+%
+\include{pages/Family/FamilyFront.tex}
+\include{pages/Family/Family.tex}
+%
+\include{pages/Psalter/PsalterCover.tex}
+\include{pages/Psalter/Psal.tex}
+%
+\include{pages/Miscellaneous/Back.tex}
+\end{document}
