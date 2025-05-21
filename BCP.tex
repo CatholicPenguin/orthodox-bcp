@@ -4,12 +4,15 @@ bindingoffset=5mm,%having an inner margin offset prevents text falling into the 
 inner=20mm,
 outer=20mm,
 top=20mm,
-bottom=25mm,
+bottom=20mm,
 twoside,
 heightrounded]{geometry}
 \frenchspacing %Prevents the silly double space after each sentence
 \usepackage{pifont} %Needed for \ding characters (for the crosses mainly)
 \usepackage{ebgaramond} %Standard open source font
+
+%Non-Indented footnotes:
+%\usepackage[hang,flushmargin]{footmisc}
 
 %To ensure language compatibility.
 \usepackage[utf8]{inputenc}
@@ -33,7 +36,7 @@ heightrounded]{geometry}
 \section*{#1}}
 
 \newcommand{\subbypsalm}[1]{\setcounter{lettcount}{0}%
-\Needspace{7\baselineskip}%
+\Needspace{8\baselineskip}%
 \subsection{#1}}
 
 \newcommand{\subby}[1]{\setcounter{lettcount}{0}\setcounter{margcount}{1}%
@@ -275,28 +278,34 @@ heightrounded]{geometry}
 \newcommand{\evensong}[1]{Evensong} %To allow switch in naming of Vespers and Evensong in lectionary
 
 %For Rubric Colour:
-\definecolor{BostonUniversityRed}{rgb}{0.8, 0.0, 0.0}
+\definecolor{RubricRed}{RGB}{156, 4, 10}
 
 %I have found it useful to have different kinds of headings in order to instruct the reader. For mere rubrical notes, which are meant to be in paragraph form, rubric is used. For headings, meant to be short, inhead (instructional heading) is used.
 %Rubric Environments
 \newenvironment{inhead}{\setcounter{lettcount}{0}\par\centering%
-\itshape%
-%\color{BostonUniversityRed}%
+%\itshape%
+\color{RubricRed}%
 \small\smallskip\ignorespaces}
 {\par\smallskip\ignorespacesafterend}
 %The first ifnum checks the boolean (there is a lett, but no secondline or thirdline) then checks the lines preceeding:
 \newenvironment{rubric}{\par\ifnum\thelettcount=1\ifnum\prevgraf=1\vspace{1\baselineskip}\smallskip\else\ifnum\prevgraf=2\medskip\smallskip\else\smallskip\fi\fi\fi\ifnum\thelettcount=2\medskip\smallskip\else\smallskip\fi\setcounter{lettcount}{0}\par\noindent%
-%\color{BostonUniversityRed}%
+\color{RubricRed}%
 \small\ignorespaces%
-\itshape%
+%\itshape%
+\P}
+{\par\smallskip\ignorespacesafterend}
+
+%Rubric after section:
+\newenvironment{secrubric}{\setcounter{lettcount}{0}\par\noindent\small\ignorespaces%\itshape%%
+\color{RubricRed}%
 \P}
 {\par\smallskip\ignorespacesafterend}
 
 %Inline Rubric
-\newcommand{\inrub}[1]{{\small{%\color{BostonUniversityRed}%
-{\itshape%
-(#1)
-}
+\newcommand{\inrub}[1]{{\small{%
+{%\itshape%
+\color{RubricRed}%
+(#1)\hspace{-0.2em}}
 }}}
 
 %Determine Marginnote parameters
@@ -308,13 +317,31 @@ heightrounded]{geometry}
 %Margin Rubrics/Notes/Description/Commentar
 \newcounter{margcount}
 \setcounter{margcount}{1}%
+
+\newcommand{\margy}[1]{\marginnote{\begin{minipage}{0.65\marginparwidth}
+\sloppy%
+\itshape%
+\scriptsize%
+#1
+\fussy
+\end{minipage}}}
+
+\newcommand{\margyleft}[1]{\marginnote{\begin{minipage}{0.65\marginparwidth}
+\RaggedLeft
+\sloppy%
+\itshape%
+\scriptsize%
+#1
+\fussy
+\end{minipage}}}
+
 \newcommand{\margrub}[1]{\textsuperscript{\alph{margcount}}%
-\marginpar{\begin{minipage}{0.7\marginparwidth}
+\marginpar{\begin{minipage}{0.65\marginparwidth}
 \sloppy%
 \itshape%
 \scriptsize%
 \textsuperscript{\alph{margcount}}%
-#1%
+#1
 \fussy
 \end{minipage}}
 \stepcounter{margcount}
@@ -322,7 +349,25 @@ heightrounded]{geometry}
 \ifnum\value{margcount}>26\relax%
     \setcounter{margcount}{1}%
     \setcounter{latinrubric}{1}
-  \fi}
+  \fi
+  \hspace{-0.45em}}
+  
+  
+  \newcommand{\margrubleft}[1]{\textsuperscript{\alph{margcount}}%
+\marginpar{\RaggedLeft%
+\sloppy%
+\itshape%
+\scriptsize%
+\textsuperscript{\alph{margcount}}%
+#1%
+\fussy}
+\stepcounter{margcount}
+\stepcounter{latinrubric}
+\ifnum\value{margcount}>26\relax%
+    \setcounter{margcount}{1}%
+    \setcounter{latinrubric}{1}
+  \fi
+  \hspace{-0.2em}}
   
 %Makes sure odd pages are on the right when moving between page number types.
 \usepackage[strict]{changepage}
@@ -337,7 +382,7 @@ heightrounded]{geometry}
 \itshape%
 \scriptsize%
     \textsuperscript{\alph{margcount}}%
-    #1%
+    #1\hspace{-0.2em}%
     \fussy}
     }{\normalmarginpar
     \marginpar{%
@@ -346,7 +391,7 @@ heightrounded]{geometry}
 \itshape%
 \scriptsize%
 \textsuperscript{\alph{margcount}}%
-    #1%
+    #1\hspace{-0.2em}%
     \fussy}}
 \stepcounter{margcount}%
 \ifnum\value{margcount}>26\relax%
@@ -360,18 +405,27 @@ heightrounded]{geometry}
 %To apply counters to all paracol columns:
 \globalcounter*
 
-\newcommand{\marglatincolrub}[1]{\textsuperscript{\alph{latinrubric}}%
+\newcommand{\marglatincolrub}[1]{\textsuperscript{\alph{latinrubric}}\hspace{-0.2em}%
 \stepcounter{latinrubric}%
 \ifnum\value{latinrubric}>26\relax%
     \setcounter{latinrubric}{1}
 \fi
 }
-%Propers
+%Antiphons
 \newcommand{\antiphon}[2]{{\centering \textit{#1 Ant.} #2}}
+
+%Proper Antiphons
+%\newcommand{\properantiphon}[2]{{\centering \textit{#1 Ant.} #2}}
+\newcommand{\properantiphon}[2]{}
+
+%I noticed that when I omitted the antiphons, it created too much space between the heading and the Introit. This is here to fix that.
+
+\newcommand{\properantiphonfix}[0]{\vspace{-1ex}}
 
 %Invitatory \& Fore-Office
 \newcommand{\inv}[1]{\textit{#1}}
 \newcommand{\vr}[1]{{\footnotesize{ (#1)}}}
+\newcommand{\fovr}[1]{}
 
 %Since I've been going back and forth on capitalisation of letters in small caps, I made this command in order to be able to change them all at once:
 \newcommand{\divineName}[1]{\textsc{#1}}
@@ -526,7 +580,7 @@ heightrounded]{geometry}
 %\DTMdisplaydate{\number\year}{\number\DTMmonth}{\number\DTMday}{0}}}
 
 %Psalm Formatting
-\newcommand{\psanum}[1]{\Needspace{1\baselineskip}%
+\newcommand{\psanum}[1]{%\Needspace{1\baselineskip}%
 {\small{#1}} } %Allows flexibility in how to handle the verse number at the beginning of each psalm verse.
 
 %Changes to the Table of Contents
@@ -615,13 +669,15 @@ heightrounded]{geometry}
 \addcontentsline{toc}{section}{Copyright}
 \fancyhead[C]{{\Large Copyright}}
 \noindent
-\copyright{} 2024 Apologia Anglicana, LLC\\
+\copyright{} 2025 Apologia Anglicana, LLC\\
 \par\noindent
 Edited by Augustine Watson (Augustine@ApologiaAnglicana.org).\\%\par\noindent
 %Front cover designed by Matthew Taylor (@semperadiuvans).\\
 \par\noindent
-The Book of Common Prayer, published by Apologia Anglicana, LLC, is licenced under the \href{https://creativecommons.org/licenses/by-sa/4.0/}{Creative Commons Attribution-ShareAlike 4.0 International} (\url{https://creativecommons.org/licenses/by-sa/4.0/}) licence.\\
-\par\noindent
+The Book of Common Prayer, published by Apologia Anglicana, LLC, is licenced under the \href{https://creativecommons.org/licenses/by-sa/4.0/}{Creative Commons Attribution-ShareAlike 4.0 International} (\url{https://creativecommons.org/licenses/by-sa/4.0/}) licence.
+\begin{center}
+	\textsc{Please note that this is not currently an official text of the Antiochian Western Rite Vicariate.}
+\end{center}
 While great care was taken to use only works in the public domain in these United States of America, there were a few cases where this was not possible. We are thankful to have such great giants upon whose shoulders we stand. These works are used in this Book according to fair use.\par
 \textit{A Manual for Priests}. \nth{5} edition. Athens: Anglican Parishes Association, 2004.\par\noindent
 \textit{This was consulted for the Burial rites.}\par
@@ -658,17 +714,24 @@ Hartzell, Paul, ed. \textit{The Prayer Book Office}. 2nd ed. New York: Morehouse
 %
 \include{pages/Daily_Office_Lectionary/LectionaryCover}
 \include{pages/Daily_Office_Lectionary/Lectionary}
+\include{pages/Daily_Office/AlternativePsalter}
 %
 \include{pages/Daily_Office/DailyOffice}
 \include{pages/Daily_Office/ForeOffice}
 \include{pages/Daily_Office/Mattins}
 \include{pages/Daily_Office/OTCant}
-\include{pages/Daily_Office/Prime}
+\include{pages/Daily_Office/Prime_english}
 \include{pages/Daily_Office/Pretiosa}
 \include{pages/Daily_Office/Commemoration}
 \include{pages/Daily_Office/Ath}
+%\include{pages/Daily_Office/Terce_english}
+\include{pages/Daily_Office/Terce_english_119}
+%\include{pages/Daily_Office/Sext_english}
+\include{pages/Daily_Office/Sext_english_119}
+%\include{pages/Daily_Office/None_english}
+\include{pages/Daily_Office/None_english_119}
 \include{pages/Daily_Office/Evensong}
-\include{pages/Daily_Office/Compline}
+\include{pages/Daily_Office/Compline_english}
 \include{pages/Daily_Office/Mary}
 %
 \include{pages/Prayers/PrayersFront.tex}
